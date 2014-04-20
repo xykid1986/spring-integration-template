@@ -9,13 +9,15 @@ import org.springframework.integration.MessageChannel;
 import org.springframework.integration.core.PollableChannel;
 import org.springframework.integration.support.MessageBuilder;
 
-public class TestTraffic {
+import com.xiao.domain.Book;
+
+public class AMQPAdapterTest {
 
 	public static void main(String[] args) throws IOException, ClassNotFoundException {
-		AbstractApplicationContext ctx = new ClassPathXmlApplicationContext("classpath:/spring/context.xml");
+		AbstractApplicationContext ctx = new ClassPathXmlApplicationContext("/spring/amqp-adapter-context.xml");
 		MessageChannel toRabbit = ctx.getBean("toRabbit",MessageChannel.class);
 		PollableChannel fromRabbit = ctx.getBean("fromRabbit",PollableChannel.class);
-		for(int i=0;i<10;i++)
+		for(int i=0;i<100000;i++)
 			toRabbit.send(MessageBuilder.withPayload(new Book("Two cities"+i,"Xiao Yi")).build());
 		while(true){
 			@SuppressWarnings("unchecked")

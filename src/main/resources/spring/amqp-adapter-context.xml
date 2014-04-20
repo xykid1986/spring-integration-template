@@ -9,15 +9,16 @@
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 
-	<import resource="amqp-context.xml" />
+	<import resource="amqp-rabbitmq-context.xml" />
 	
+	<!-- exchange-name and routing-key must be defined here, no matter what is defined in amqpTemplate -->
 	<int-amqp:outbound-channel-adapter
-		channel="toRabbit" amqp-template="amqpTemplate" exchange-name="directExchange"
-		routing-key="foo" />
+		channel="toRabbit" amqp-template="amqpTemplate" exchange-name="directExchange" routing-key="foo"/>
 
+	<!-- the message-converter must be the same as the one used in amqpTemplate -->
 	<int-amqp:inbound-channel-adapter
 		channel="fromRabbit" queue-names="myQueue" connection-factory="connectionFactory"
-		concurrent-consumers="5" message-converter="xmlConverter" />
+		concurrent-consumers="5" message-converter="jsonConverter" />
 
 	<int:channel id="fromRabbit">
 		<int:queue capacity="20" />

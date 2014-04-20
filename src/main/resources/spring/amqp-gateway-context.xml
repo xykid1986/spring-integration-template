@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:int-amqp="http://www.springframework.org/schema/integration/amqp"
+	xmlns:int-stream="http://www.springframework.org/schema/integration/stream"
+	xsi:schemaLocation="http://www.springframework.org/schema/integration/amqp http://www.springframework.org/schema/integration/amqp/spring-integration-amqp.xsd
+		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+		http://www.springframework.org/schema/integration/stream http://www.springframework.org/schema/integration/stream/spring-integration-stream.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+<!-- 	amqp gateway works like this: outbound-gateway.request-channel -> outbound-gateway -> toRabbit ->  -->
+<!-- 	rabbitmq -> inbound-gateway -> inbound-gateway.fromRabbit -> service ->*-> rabbitmq -> outbound-gateway.reply-queue -->
+	
+<!-- 	* reply-queue of service and inbound-gateway -->
+	
+<!-- 	This can be seen as a whole process of a message, and the next message will not be sent before outbound-gateway.reply-queue -->
+<!-- 	receive a reply -->
+
+<!-- 	When the service takes too long to send the reply, it may timeout and cause the outbound-gateway to be stuck forever  -->
+
+<!-- 	if the outbound-gateway.reply-queue is full, it will cause stuck -->
+	<import resource="amqp-rabbitmq-context.xml" />
+
+	<!-- reply-channel is where replies should be sent after being received 
+		from an AQMP Queue and converted -->
+	<int-amqp:outbound-gateway request-channel="toRabbit" exchange-name="directExchange" routing-key="foo"
+		amqp-template="amqpTemplate" reply-channel="outboundReply"/>
+
+	<!-- the message-converter must be the same as the one used in amqpTemplate -->
+	<int-amqp:inbound-gateway request-channel="fromRabbit" 
+		concurrent-consumers="1" queue-names="myQueue"
+		connection-factory="connectionFactory" message-converter="jsonConverter"/>
+
+	<int:service-activator input-channel="fromRabbit" ref="upperCaseService" method="toUpperCase" />
+
+	<bean id="upperCaseService" class="com.xiao.service.UpperCaseServiceImpl" />
+
+	<int:channel id="outboundReply">
+		<int:queue capacity="2000" />
+	</int:channel>
+
+	<int:channel id="toRabbit" />
+
+	<int:channel id="fromRabbit" />
+
+	<int:channel id="inboundReply"/>
+
+
+</beans>

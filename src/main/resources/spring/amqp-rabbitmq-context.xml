@@ -5,13 +5,13 @@
 	xmlns:rabbit="http://www.springframework.org/schema/rabbit"
 	xmlns:int-stream="http://www.springframework.org/schema/integration/stream"
 	xsi:schemaLocation="
-		http://www.springframework.org/schema/rabbit http://www.springframework.org/schema/rabbit/spring-rabbit.xsd
+		http://www.springframework.org/schema/rabbit http://www.springframework.org/schema/rabbit/spring-rabbit-1.2.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<rabbit:connection-factory id="connectionFactory" username="yi" password="1986441986"/>
 
 	<rabbit:template id="amqpTemplate" connection-factory="connectionFactory"
-		message-converter="xmlConverter" />
+		exchange="directExchange" routing-key="foo" message-converter="jsonConverter" />
 
 	<rabbit:admin connection-factory="connectionFactory" />
 	<!-- declare queues -->
@@ -52,7 +52,7 @@
 		<constructor-arg name="marshaller">
 			<bean class="org.springframework.oxm.jaxb.Jaxb2Marshaller">
 				<!-- defines the domain packages. put Jaxb annotations to class and fields -->
-				<property name="packagesToScan" value="com.xiao.test"></property>
+				<property name="packagesToScan" value="com.xiao.domain"></property>
 				<!-- do not generate xml header tag for domain objects -->
 				<property name="marshallerProperties">
 					<map value-type="java.lang.Boolean">

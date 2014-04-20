@@ -1,4 +1,4 @@
-package com.xiao.test;
+package com.xiao.domain;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
